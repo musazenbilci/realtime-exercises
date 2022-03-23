@@ -3,6 +3,9 @@ const msgs = document.getElementById("msgs");
 const presence = document.getElementById("presence-indicator");
 let allChat = [];
 
+const GREENC = "🟢";
+const REDC = "🔴";
+
 // listen for events on the form
 chat.addEventListener("submit", function (e) {
   e.preventDefault();
@@ -11,14 +14,27 @@ chat.addEventListener("submit", function (e) {
 });
 
 async function postNewMsg(user, text) {
-  // code goes here
+  const data = { user, text};
+  ws.send(JSON.stringify(data));
 }
 
-/*
- *
- * your code goes here
- *
- */
+const ws  = new WebSocket("ws://localhost:8080", ["json"]);
+
+ws.addEventListener("open", ()=>{
+  console.log("connetced");
+  presence.innerText = GREENC;
+})
+
+ws.addEventListener("message", (event)=>{
+  const data = JSON.parse(event.data);
+  allChat = data.msg;
+  render();
+})
+
+ws.addEventListener("end", ()=>{
+  console.log("disconnetced");
+  presence.innerText = REDC;
+})
 
 function render() {
   const html = allChat.map(({ user, text }) => template(user, text));
